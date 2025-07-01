@@ -1,4 +1,5 @@
-                [ HOST MACHINE ]
+```
+        [ HOST MACHINE ]
 ┌────────────────────────────────────────────────────┐
 │     http://localhost:8080 → Airflow UI             │
 │     http://localhost:8081 → Spark Master UI        │
@@ -55,4 +56,4 @@ DOCKER BRIDGE NETWORK  (Shared internal container network)
 │     - Accessed by spark-app via:                   │
 │         jdbc:postgresql://postgres:5432/testdb     │
 └────────────────────────────────────────────────────┘
- 
+```
