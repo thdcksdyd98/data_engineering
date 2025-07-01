@@ -1,0 +1,133 @@
+version: '3.9'
+
+services:
+  # airflow meta-data, spark app data database
+  postgresql:
+    image: bitnami/postgresql:latest
+    environment:
+      - POSTGRESQL_DATABASE=bitnami_airflow # not allow more than one
+      - POSTGRESQL_USERNAME=admin
+      - POSTGRESQL_PASSWORD=admin
+    volumes:
+      - pgdata:/bitnami
+      - ./postgres_init:/docker-entrypoint-initdb.d # should be directory
+    ports:
+      - 5432:5432
+    networks:
+      - mynet 
+
+  # [USE LOCAL EXECUTOR -> NO NEED AIRFLOW WORKER]    
+  # airflow-worker:
+  #   image: bitnami/airflow:latest
+  #   environment:
+  #     - AIRFLOW_COMPONENT_TYPE=worker
+  #     - AIRFLOW_EXECUTOR=LocalExecutor
+  #     - AIRFLOW_DATABASE_NAME=bitnami_airflow
+  #     - AIRFLOW_DATABASE_USERNAME=admin
+  #     - AIRFLOW_DATABASE_PASSWORD=admin
+  #     - AIRFLOW_LOAD_EXAMPLES=no
+  #     - AIRFLOW_DATABASE_HOST=postgresql
+  #     - AIRFLOW_DATABASE_PORT_NUMBER=5432
+  #   depends_on:
+  #     - postgresql
+  #   networks:
+  #     - mynet 
+
+  airflow-scheduler:
+    image: bitnami/airflow:latest
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=scheduler
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=admin
+      - AIRFLOW_DATABASE_PASSWORD=admin
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_DATABASE_HOST=postgresql
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+    depends_on:
+      - postgresql
+    networks:
+      - mynet 
+
+  airflow:
+    image: bitnami/airflow:latest
+    environment:
+      - AIRFLOW_EXECUTOR=LocalExecutor
+      - AIRFLOW_DATABASE_NAME=bitnami_airflow
+      - AIRFLOW_DATABASE_USERNAME=admin
+      - AIRFLOW_DATABASE_PASSWORD=admin
+      - AIRFLOW_LOAD_EXAMPLES=no
+      - AIRFLOW_USERNAME=admin
+      - AIRFLOW_PASSWORD=admin
+      - AIRFLOW_EMAIL=admin@airflow.com
+      - AIRFLOW_DATABASE_HOST=postgresql
+      - AIRFLOW_DATABASE_PORT_NUMBER=5432
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresql
+    networks:
+      - mynet 
+
+  spark-master:
+    image: bitnami/spark:3.4.1
+    environment:
+      - SPARK_MODE=master
+      - SPARK_USER=admin
+      - SPARK_WORK_DIR=/opt/bitnami/app
+      - SPARK_UI_PORT=8081
+      - SPARK_MASTER_PORT=7077
+    ports:
+      - 8081:8080
+      - 7077:7077
+    networks:
+      - mynet
+
+  spark-worker:
+    image: bitnami/spark:3.4.1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_WORKER_CORES=2
+      - SPARK_USER=admin
+      - SPARK_WORK_DIR=/opt/bitnami/app
+      - SPARK_UI_PORT=8081
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    networks:
+      - mynet
+
+  init-python:
+    image: python:3.9-slim
+    depends_on:
+      - postgresql
+      - airflow-scheduler
+      - airflow
+      - spark-master
+      - spark-worker
+    volumes:
+      - ./init_script.py:/app/init_script.py
+    working_dir: /app
+    entrypoint: >
+      sh -c "
+            pip install psycopg2-binary Faker &&
+            python init_script.py
+            "
+    networks:
+      - mynet
+      
+  # spark-app:
+  #   build: ./spark_app
+  #   container_name: spark-app
+  #   depends_on:
+  #     - postgres
+  #     - spark-master
+  #   environment:
+  #     - PYSPARK_SUBMIT_ARGS=--master spark://spark-master:7077 pyspark-shell
+  #   networks:
+  #     - mynet
+
+networks:
+  mynet:
+    driver: bridge
+volumes:
+  pgdata:
