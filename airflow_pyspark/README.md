@@ -72,6 +72,3 @@ DOCKER BRIDGE NETWORK  (Shared internal container network)
  
 
 docker compose down -v --remove-orphans -> remove all container, network, and volumes
-docker image prune --all -f
-docker builder prune --all --force
-docker compose up
