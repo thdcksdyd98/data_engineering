@@ -1,13 +1,19 @@
-airlfow_pyspark/
-├── airflow
-│   └── dags
-├── docker-compose.yml
-├── init_script.py
-├── pgdata
-├── postgres_init
-│   └── myapp_data.sql
-├── README.md
-└── spark_app
+data_engineering
+├── airflow_pyspark
+│   ├── airflow
+│   │   └── dags
+│   │       └── spark_submit_dag.py
+│   ├── docker-compose.yml
+│   ├── init_script.py
+│   ├── postgres_init
+│   │   └── myapp_data.sql
+│   ├── README.md
+│   └── spark_app
+│       ├── app.py
+│       ├── Dockerfile
+│       └── jars
+│           └── postgresql-42.7.7.jar
+└── README.md
 
 
         [ HOST MACHINE ]
