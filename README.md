@@ -29,8 +29,4 @@ This repository is intended to showcase my technical proficiency, architectural 
 
 This portfolio was created with the goal of transitioning into a **Data Engineer role**. Every project here reflects my focus on building pipelines that are not just technically sound, but also **scalable, maintainable, and relevant to modern data engineering practices**.
 
-> 📅 Repository started: **June 29, 2025**
-
 ---
-
-Feel free to explore each folder for detailed project documentation, architecture diagrams, and code walkthroughs.
